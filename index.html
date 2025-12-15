@@ -443,28 +443,23 @@ img.lazy.loaded { filter: none; }
 </head>
 <body>
 
-<h1>【ポケモンカード買取表(郵送も共通)】</h1>
+<h1>【ポケモンカード買取表(メイン所・代表カード系統)】</h1>
 
 <div class="notice-header">
-  <p class="notice-important">
-    地方の方も、郵送価格＝対面価格でお査定します‼️
-  </p>
-  <p class="notice-sellpoint">
-    全国最高値カード多数＆ラインナップ随時強化中‼️査定後の交渉もOK🙆‍♀️
   </p>
   <p class="notice-quick">
-    東京近郊の方は秋葉原で対面買取も対応!!（11時～22時）<br>
-    郵送の場合、到着日の相場で査定、最短当日査定&当日振込‼️
+  大口の方のみ、DMでご連絡いただければ対応!!（11時～22時）
+  大口の定義：申し込み合計金額50万円以上
   </p>
   <p class="notice-dm">
-    買取希望カードを写真または文字でDMに送信‼️<br>
-    （申込枚数25枚以上 or 合計30万円以上が受付対象）
+    郵送希望の方は買取希望カードを写真または文字でDMに送信‼️<br>
+    （合計50万円以上が受付対象）
   </p>
 </div>
 
 <div class="controls">
 
-  <div class="checkbox-group">
+ <div class="checkbox-group">
     <strong>【ポケモン種族】</strong>
     <label><input type="checkbox" value="ピカチュウ"><span>ピカチュウ系統</span></label>
     <label><input type="checkbox" value="リザードン"><span>リザードン系統</span></label>
@@ -495,6 +490,7 @@ img.lazy.loaded { filter: none; }
     <label><input type="checkbox" value="マック"><span>マックプロモ系統</span></label>
   </div>
 
+
   <div class="search-wrapper">
     <input type="text" id="searchInput" placeholder="カード名や型番で検索（ひらがな検索対応）" aria-label="カード検索" />
   </div>
@@ -513,12 +509,12 @@ img.lazy.loaded { filter: none; }
 
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.2/papaparse.min.js"></script>
 <script>
-const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgSjXDetFkCm904ILmhH9UB24MbFrPV0TNdOKFJI_jxr7hvDy8hymSpj4ZX34_4ICBmqHa-QAT8qSo/pub?gid=1393270336&single=true&output=csv';
+const csvUrl = 'https://docs.google.com/spreadsheets/d/e/2PACX-1vTgSjXDetFkCm904ILmhH9UB24MbFrPV0TNdOKFJI_jxr7hvDy8hymSpj4ZX34_4ICBmqHa-QAT8qSo/pub?gid=1846513822&single=true&output=csv';
 
 let cards = [];
 let filteredCards = [];
 let currentPage = 0;
-const cardsPerPage = 102;
+const cardsPerPage = 100;
 let showImages = true;
 
 // カタカナ → ひらがな
@@ -561,7 +557,7 @@ function applyFilterSort(sortValueFromBtn){
 
   filteredCards = cards.filter(card => {
     // 🔹カード名で検索判定
-    const target = normalizeLatin(kataToHira(card["カード名 型番 レアリティ"]||""));
+    const target = normalizeLatin(kataToHira(card["ガチャ選択肢名称"]||""));
     const keywordMatch = keywords.every(k => target.includes(k));
 
 // 🔹分類でチェックボックス判定（分類1 または 分類2 に含まれるかで判定）
@@ -599,12 +595,12 @@ async function fetchCsvData(){
     const text = await res.text();
     const parsed = Papa.parse(text,{header:true, skipEmptyLines:true});
 cards = parsed.data.map(card=>({
-  "カード名 型番 レアリティ": card["カード名 型番 レアリティ"],
+  "ガチャ選択肢名称": card["ガチャ選択肢名称"],
   "分類1": card["分類1"],   // ← 新しく追加
   "分類2": card["分類2"],   // ← 新しく追加
   "募集枚数": card["募集枚数"],
   "店頭価格": card["店頭価格"],
-  "最低価格": card["最低価格"],
+  "郵送価格": card["郵送価格"],
   "画像URL": card["画像URL"],
   "グレイアウト発動時専用": card["グレイアウト発動時専用"]
 }));
@@ -637,19 +633,19 @@ function displayNextPage(){
     const isZero = (card["募集枚数"]||"").trim() === "0枚募集中";
     const grayClass = isZero ? 'gray-out' : '';
     const normalPrice = Number((card["店頭価格"]||'0').replace(/[¥,\s]/g,'')) || 0;
-    const foilPrice = Number((card["最低価格"]||'0').replace(/[¥,\s]/g,'')) || 0;
+    const foilPrice = Number((card["郵送価格"]||'0').replace(/[¥,\s]/g,'')) || 0;
     
     const priceDisplay = showImages
       ? isZero ? (card["グレイアウト発動時専用"]||'DMで確認') 
-               : `<span class="price-store">共通買取価格</span><br><span class="price-store">¥${normalPrice.toLocaleString()}</span><br><span class="price-mail">最低買取価格</span><br><span class="price-mail">¥${foilPrice.toLocaleString()}</span>`
+               : `<span class="price-store">店頭買取価格</span><br><span class="price-store">¥${normalPrice.toLocaleString()}</span><br><span class="price-mail">郵送買取価格</span><br><span class="price-mail">¥${foilPrice.toLocaleString()}</span>`
       : isZero ? (card["グレイアウト発動時専用"]||'DMで確認') 
-               : `<span class="price-store-inline">共通買取価格 ¥${normalPrice.toLocaleString()}</span> / <span class="price-mail-inline">最低買取価格 ¥${foilPrice.toLocaleString()}</span>`;
+               : `<span class="price-store-inline">店頭買取価格 ¥${normalPrice.toLocaleString()}</span> / <span class="price-mail-inline">郵送買取価格 ¥${foilPrice.toLocaleString()}</span>`;
 
     const div = document.createElement('div');
     div.className = `card ${grayClass} ${!showImages ? 'no-image' : ''}`;
     div.innerHTML = `
-      <img data-src="${card.画像URL}" loading="lazy" alt="${card["カード名 型番 レアリティ"]}" class="lazy"/>
-      <div class="card-name">${card["カード名 型番 レアリティ"]}</div>
+      <img data-src="${card.画像URL}" loading="lazy" alt="${card["ガチャ選択肢名称"]}" class="lazy"/>
+      <div class="card-name">${card["ガチャ選択肢名称"]}</div>
       <div class="card-texts">
         <div class="card-price">${priceDisplay}</div>
         <div class="card-quantity">本日${isZero ? '<br>満額は終了' : (card["募集枚数"]||'-')}</div>
@@ -728,3 +724,4 @@ fetchCsvData();
 </script>
 </body>
 </html>
+
